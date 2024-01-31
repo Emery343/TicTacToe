@@ -44,7 +44,7 @@ public class State
     }
 
     public int getBoardCell(int row, int col) {
-        return this.board[row][col];
+        return this.board[row][col ];
     }
 
     public void setBoardCell(int row, int col, int value) {
