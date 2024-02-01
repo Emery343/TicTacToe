@@ -13,6 +13,7 @@ public class EventLoop {
     }
 
     public void run() {
+        boolean validMove = false;
         while (state.getGameState() != Constants.QUIT_PROGRAM) {
             int gameState = state.getGameState();
             if (gameState == Constants.STANDBY) {
@@ -26,63 +27,60 @@ public class EventLoop {
                 state.setOName(ui.promptForName("O"));
                 state.setGameState(Constants.GET_X_MOVE);
 
-            } else if (gameState == Constants.GET_X_MOVE) {
+            } else if (gameState == Constants.GET_X_MOVE || gameState == Constants.GET_O_MOVE) {
                 ui.printBoard(state);
                 row = ui.getMoveRow(state.getWhoseMove(), state.getXName(), state.getOName());
                 col = ui.getMoveCol(state.getWhoseMove(), state.getXName(), state.getOName());
                 if (ui.isLegalMove(state, row, col)) {
+                    validMove = true;
                     state.setGameState(Constants.MAKE_MOVE);
                 }
-            } else if (gameState == Constants.GET_O_MOVE) {
-                ui.printBoard(state);
-                row = ui.getMoveRow(state.getWhoseMove(), state.getXName(), state.getOName());
-                col = ui.getMoveCol(state.getWhoseMove(), state.getXName(), state.getOName());
-                if (ui.isLegalMove(state, row, col)) {
-                    state.setGameState(Constants.MAKE_MOVE);
-                } else if (gameState == Constants.MAKE_MOVE) {
-                    ui.printMove(state, row, col);
-                    state.setBoardCell(row - 1, col - 1, state.getWhoseMove());
-                    state.setGameState(Constants.CHECK_IF_WINNER);
+            } else  if (validMove == false) {
+                System.out.println ("Invalid move. Please enter 1, 2, or 3.");
 
-                } else if (gameState == Constants.CHECK_IF_WINNER) {
-                    if (state.isWinner()) {
-                        if (state.getWhoseMove() == Constants.X) {
-                            state.setGameState(Constants.X_WINS);
-                        } else {
-                            state.setGameState(Constants.O_WINS);
-                        }
+            } else if (gameState == Constants.MAKE_MOVE) {
+                ui.printMove(state, row, col);
+                state.setBoardCell(row - 1, col - 1, state.getWhoseMove());
+                state.setGameState(Constants.CHECK_IF_WINNER);
+
+            } else if (gameState == Constants.CHECK_IF_WINNER) {
+                if (state.isWinner()) {
+                    if (state.getWhoseMove() == Constants.X) {
+                        state.setGameState(Constants.X_WINS);
                     } else {
-                        state.setGameState(Constants.CHECK_IF_TIE);
+                        state.setGameState(Constants.O_WINS);
                     }
+                } else {
+                    state.setGameState(Constants.CHECK_IF_TIE);
+                }
 
-                } else if (gameState == Constants.CHECK_IF_TIE) {
-                    if (state.isTie()) {
-                        ui.printTieGame();
-                        state.setGameState(Constants.GAME_OVER);
-                    } else {
-                        state.setWhoseMove(state.getWhoseMove() * -1);
-                        if (state.getWhoseMove() == Constants.X) {
-                            state.setGameState(Constants.GET_X_MOVE);
-                        } else {
-                            state.setGameState(Constants.GET_O_MOVE);
-                        }
-                    }
-
-                } else if (gameState == Constants.X_WINS) {
-                    ui.printWinner(state);
+            } else if (gameState == Constants.CHECK_IF_TIE) {
+                if (state.isTie()) {
+                    ui.printTieGame();
                     state.setGameState(Constants.GAME_OVER);
-
-                } else if (gameState == Constants.O_WINS) {
-                    ui.printWinner(state);
-                    state.setGameState(Constants.GAME_OVER);
-
-                } else if (gameState == Constants.GAME_OVER) {
-                    if (ui.startNewGame()) {
-
-                        state.setGameState(Constants.STANDBY);
+                } else {
+                    state.setWhoseMove(state.getWhoseMove() * -1);
+                    if (state.getWhoseMove() == Constants.X) {
+                        state.setGameState(Constants.GET_X_MOVE);
                     } else {
-                        state.setGameState(Constants.QUIT_PROGRAM);
+                        state.setGameState(Constants.GET_O_MOVE);
                     }
+                }
+
+            } else if (gameState == Constants.X_WINS) {
+                ui.printWinner(state);
+                state.setGameState(Constants.GAME_OVER);
+
+            } else if (gameState == Constants.O_WINS) {
+                ui.printWinner(state);
+                state.setGameState(Constants.GAME_OVER);
+
+            } else if (gameState == Constants.GAME_OVER) {
+                if (ui.startNewGame()) {
+
+                    state.setGameState(Constants.STANDBY);
+                } else {
+                    state.setGameState(Constants.QUIT_PROGRAM);
                 }
             }
         }
